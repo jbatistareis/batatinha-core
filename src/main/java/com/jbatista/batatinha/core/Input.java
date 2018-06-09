@@ -9,15 +9,17 @@ public class Input {
     private char lastKey;
     private final Set<Character> pressedKeys = new HashSet<>(16);
 
-    public void press(int key) {
+    public void press(Key key) {
+        /*
         if (pressedKeys.add((char) key)) {
             lastKey = (char) key;
             pressRegistred = true;
         }
+         */
     }
 
-    public void release(int key) {
-        pressedKeys.remove((char) key);
+    public void release(Key key) {
+        // pressedKeys.remove((char) key);
         pressRegistred = false;
     }
 

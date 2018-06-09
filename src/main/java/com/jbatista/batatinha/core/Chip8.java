@@ -19,7 +19,7 @@ public class Chip8 {
         int data;
         int index = 0;
         while ((data = fileInputStream.read()) != -1) {
-            dataArray[index++ + 512] = (char) data;
+            dataArray[index++] = (char) data;
         }
         fileInputStream.close();
 

@@ -1,9 +1,6 @@
 package com.jbatista.batatinha.core;
 
 import com.jbatista.batatinha.core.Display.Mode;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,17 +9,17 @@ import java.util.function.Consumer;
 
 class Processor {
 
-    private final Random random = new Random();
+    private static final Random random = new Random();
 
-    // CPU, memory, registers, font
+    // CPU, memory, registers, program counter
     private char opcode;
     private final char[] memory = new char[4096];
     private final char[] v = new char[16];
     private char i;
     private char programCounter;
 
-    // hardcoded font
-    private final char[] chip8Font = {
+    // hardcoded fonts
+    private static final char[] chip8Font = {
         0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
         0x20, 0x60, 0x20, 0x20, 0x70, // 1
         0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -41,8 +38,9 @@ class Processor {
         0xF0, 0x80, 0xF0, 0x80, 0x80 // F
     };
 
-    // acording to 'https://github.com/Chromatophore/HP48-Superchip/blob/master/investigations/quirk_font.md', A-F are not used
-    private final char[] superChipFont = {
+    // this font was copied from octo [ https://github.com/JohnEarnest/Octo ], the original super chip font has rounded edges
+    // acording to [ https://github.com/Chromatophore/HP48-Superchip/blob/master/investigations/quirk_font.md ], A-F are not used
+    private static final char[] superChipFont = {
         0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, // 0
         0x18, 0x78, 0x78, 0x18, 0x18, 0x18, 0x18, 0x18, 0xFF, 0xFF, // 1
         0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, // 2
@@ -61,7 +59,7 @@ class Processor {
         0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC0, 0xC0, 0xC0, 0xC0 // F
     };
 
-    // jump to routine stack
+    // jump routine stack
     private final char[] stack = new char[16];
     private char stackPointer;
 
@@ -70,13 +68,18 @@ class Processor {
     private char delayTimer;
 
     // auxiliary
+    private final Display display;
+    private final Input input;
     private final Map<Character, Consumer<Character>> opcodesMap = new HashMap<>();
     private boolean beep;
     private char decodedOpcode;
     private char tempResult;
     private int drawN;
 
-    Processor() throws IOException {
+    Processor(Display display, Input input) {
+        this.display = display;
+        this.input = input;
+
         // load both fonts
         for (int i = 0; i < chip8Font.length; i++) {
             memory[i] = chip8Font[i];
@@ -86,9 +89,6 @@ class Processor {
         }
 
         // <editor-fold defaultstate="collapsed" desc="hardcoded opcode functions, double click to expand (Netbeans)">
-        // debug
-        opcodesMap.put((char) 0xF000, this::emptyRegion);
-
         // chip-8 opcodes
         opcodesMap.put((char) 0xE0, this::dispClear);
         opcodesMap.put((char) 0xEE, this::returnSubRoutine);
@@ -140,23 +140,19 @@ class Processor {
         // </editor-fold>
     }
 
-    void loadProgram(File program) throws IOException {
+    void loadProgram(char[] program) {
         Arrays.fill(memory, 0, 512, (char) 0);
 
-        final FileInputStream fileInputStream = new FileInputStream(program);
-        int data;
-        int index = 0;
-        while ((data = fileInputStream.read()) != -1) {
-            memory[index++ + 512] = (char) data;
+        for (i = 0; i < program.length; i++) {
+            memory[i + 512] = program[i];
         }
-        fileInputStream.close();
     }
 
     void reset() {
         Arrays.fill(v, (char) 0);
         Arrays.fill(stack, (char) 0);
 
-        Display.clear();
+        display.clear();
         i = 0;
         stackPointer = 0;
         soundTimer = 0;
@@ -169,7 +165,7 @@ class Processor {
         opcode = (char) (memory[programCounter] << 8 | memory[programCounter + 1]);
         decodedOpcode = (char) (opcode & 0xF000);
 
-        // special cases, for instructions that use the last and the last two values
+        // special cases, for instructions that use the last and/or the before last value
         // namely 0x00XX, 0x00X#, 0x8##X, 0xF#XX and 0xE#XX
         if (decodedOpcode == 0x8000) {
             decodedOpcode = (char) (opcode & 0xF00F);
@@ -191,24 +187,22 @@ class Processor {
     }
 
     // 60Hz
-    void timerTick() {
+    boolean timerTick() {
         if (soundTimer > 0) {
             if ((--soundTimer == 0) && beep) {
-                Buzzer.beep();
                 beep = false;
+                return true;
             }
         }
 
         if (delayTimer > 0) {
             delayTimer--;
         }
+
+        return false;
     }
 
     // <editor-fold defaultstate="collapsed" desc="opcode methods, double click to expand (Netbeans)">
-    private void emptyRegion(char arg) {
-        programCounter += 2;
-    }
-
     // 0000
     private void call(char opc) {
         // not used (?)
@@ -218,7 +212,7 @@ class Processor {
 
     // 00E0
     private void dispClear(char opc) {
-        Display.clear();
+        display.clear();
         programCounter += 2;
     }
 
@@ -318,6 +312,7 @@ class Processor {
     }
 
     // 8XY6
+    // see [ https://github.com/Chromatophore/HP48-Superchip/blob/master/investigations/quirk_shift.md ]
     private void shiftVxRightBy1(char opc) {
         v[0xF] = (char) (v[(opc & 0x0F00) >> 8] & 1);
         v[(opc & 0x0F00) >> 8] >>= 1;
@@ -332,6 +327,7 @@ class Processor {
     }
 
     // 8XYE
+    // see [ https://github.com/Chromatophore/HP48-Superchip/blob/master/investigations/quirk_shift.md ]
     private void shiftVxLeftBy1(char opc) {
         v[0xF] = (char) ((v[(opc & 0x0F00) >> 8] >> 7) & 1);
         v[(opc & 0x0F00) >> 8] <<= 1;
@@ -367,25 +363,25 @@ class Processor {
     // DXYN
     // if N = 0, and hi res is active, it loads a 16 x 16 sprite, else is 8 x N
     private void draw(char opc) {
-        drawN = (((drawN = opc & 0x000F) == 0) && Display.getDisplayMode().equals(Mode.HIGH_RES)) ? 16 : drawN;
+        drawN = (((drawN = opc & 0x000F) == 0) && display.getDisplayMode().equals(Mode.HIGH_RES)) ? 16 : drawN;
 
-        if (Display.getDisplayMode().equals(Mode.HIGH_RES) && (drawN == 16)) {
+        if (display.getDisplayMode().equals(Mode.HIGH_RES) && (drawN == 16)) {
             for (int index = 0; index < 32; index += 2) {
-                Display.addSpriteData((char) (memory[i + index] << 8 | memory[i + index + 1]));
+                display.addSpriteData((char) (memory[i + index] << 8 | memory[i + index + 1]));
             }
         } else {
             for (int index = 0; index < drawN; index++) {
-                Display.addSpriteData(memory[i + index]);
+                display.addSpriteData(memory[i + index]);
             }
         }
 
-        v[0xF] = Display.draw(v[(opcode & 0x0F00) >> 8], v[(opcode & 0x00F0) >> 4], (drawN == 16 ? 16 : 8));
+        v[0xF] = display.draw(v[(opcode & 0x0F00) >> 8], v[(opcode & 0x00F0) >> 4], (drawN == 16 ? 16 : 8));
         programCounter += 2;
     }
 
     // EX9E
     private void skipVxEqKey(char opc) {
-        if (Input.isPressed(v[(opc & 0x0F00) >> 8])) {
+        if (input.isPressed(v[(opc & 0x0F00) >> 8])) {
             programCounter += 4;
         } else {
             programCounter += 2;
@@ -394,7 +390,7 @@ class Processor {
 
     // EXA1
     private void skipVxNotEqKey(char opc) {
-        if (!Input.isPressed(v[((opc & 0x0F00) >> 8)])) {
+        if (!input.isPressed(v[((opc & 0x0F00) >> 8)])) {
             programCounter += 4;
         } else {
             programCounter += 2;
@@ -409,14 +405,11 @@ class Processor {
 
     // FX0A
     private void waitKey(char opc) {
-        Input.resetPressResgister();
-
-        // blocks with an infinite loop
-        while (!Input.pressRegistred()) {
+        // only advances the program counter if there was a key press
+        if (input.pressRegistred()) {
+            v[(opc & 0x0F00) >> 8] = input.getLastKey();
+            programCounter += 2;
         }
-
-        v[(opc & 0x0F00) >> 8] = Input.getLastKey();
-        programCounter += 2;
     }
 
     // FX15
@@ -472,9 +465,8 @@ class Processor {
     // superchip opcodes
     // DXY0 is implemented inside DXYN
     // 00CX
-    // has to be synced with 60Hz
     private void scrollDown(char opc) {
-        Display.scrollDown(opc & 0x000F);
+        display.scrollDown(opc & 0x000F);
         programCounter += 2;
     }
 
@@ -486,28 +478,26 @@ class Processor {
     }
 
     // 00FB
-    // has to be synced with 60Hz
     private void scrollRight(char opc) {
-        Display.scrollR4();
+        display.scrollR4();
         programCounter += 2;
     }
 
     // 00FC
-    // has to be synced with 60Hz
     private void scrollLeft(char opc) {
-        Display.scrollL4();
+        display.scrollL4();
         programCounter += 2;
     }
 
     // 00FE
     private void loRes(char opc) {
-        Display.setDisplayMode(Mode.LOW_RES);
+        display.setDisplayMode(Mode.LOW_RES);
         programCounter += 2;
     }
 
     // 00FF
     private void hiRes(char opc) {
-        Display.setDisplayMode(Mode.HIGH_RES);
+        display.setDisplayMode(Mode.HIGH_RES);
         programCounter += 2;
     }
 

@@ -5,35 +5,32 @@ import java.util.Set;
 
 public class Input {
 
-    private static boolean pressRegistred;
-    private static char lastKey;
-    private static final Set<Character> pressedKeys = new HashSet<>(16);
+    private boolean pressRegistred;
+    private char lastKey;
+    private final Set<Character> pressedKeys = new HashSet<>(16);
 
-    public static void press(int key) {
+    public void press(int key) {
         if (pressedKeys.add((char) key)) {
-            pressRegistred = true;
             lastKey = (char) key;
+            pressRegistred = true;
         }
     }
 
-    public static void release(int key) {
+    public void release(int key) {
         pressedKeys.remove((char) key);
+        pressRegistred = false;
     }
 
-    static boolean isPressed(Character key) {
+    boolean isPressed(Character key) {
         return pressedKeys.contains(key);
     }
 
-    static boolean pressRegistred() {
+    boolean pressRegistred() {
         return pressRegistred;
     }
 
-    static char getLastKey() {
+    char getLastKey() {
         return lastKey;
-    }
-
-    static void resetPressResgister() {
-        pressRegistred = false;
     }
 
 }

@@ -4,39 +4,39 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Display {
+class Display {
 
-    private final List<Character> sprite = new ArrayList<>();
-    private char[] buffer;
-    private char[] tempBuffer;
-    private char[] xLine;
-    private char[] yLine;
-    private char collision;
+    private static final List<Character> sprite = new ArrayList<>();
+    private static char[] buffer;
+    private static char[] tempBuffer;
+    private static char[] xLine;
+    private static char[] yLine;
+    private static char collision;
 
-    private int reducedWidth;
-    private int reducedHeight;
-    private int width;
-    private int height;
-    private int xPos;
-    private int yPos;
-    private int pixel;
+    private static int reducedWidth;
+    private static int reducedHeight;
+    private static int width;
+    private static int height;
+    private static int xPos;
+    private static int yPos;
+    private static int pixel;
 
-    private int pyOffset;
-    private int spriteHexComparator;
+    private static int pyOffset;
+    private static int spriteHexComparator;
 
-    private Mode mode = Mode.LOW_RES;
+    private static Mode mode = Mode.LOW_RES;
 
-    public enum Mode {
+    static enum Mode {
         LOW_RES, HIGH_RES
     }
 
-    public Display() {
-        changeDisplayMode(mode);
+    Display() {
+        setDisplayMode(mode);
     }
 
-    void changeDisplayMode(Mode mode) {
-        this.mode = mode;
-        switch (this.mode) {
+    static void setDisplayMode(Mode newMode) {
+        mode = newMode;
+        switch (mode) {
             case LOW_RES:
                 width = 64;
                 height = 32;
@@ -55,11 +55,11 @@ public class Display {
         clear();
     }
 
-    Mode getDisplayMode() {
-        return this.mode;
+    static Mode getDisplayMode() {
+        return mode;
     }
 
-    char draw(int x, int y, int spriteWidth) {
+    static char draw(int x, int y, int spriteWidth) {
         collision = 0;
         spriteHexComparator = (spriteWidth == 8) ? 0x80 : 0x8000;
 
@@ -80,7 +80,7 @@ public class Display {
         return collision;
     }
 
-    void scrollR4() {
+    static void scrollR4() {
         Arrays.fill(tempBuffer, (char) 0);
         Arrays.fill(xLine, (char) 0);
 
@@ -99,7 +99,7 @@ public class Display {
         }
     }
 
-    void scrollL4() {
+    static void scrollL4() {
         Arrays.fill(tempBuffer, (char) 0);
         Arrays.fill(xLine, (char) 0);
 
@@ -118,7 +118,7 @@ public class Display {
         }
     }
 
-    void scrollDown(int amount) {
+    static void scrollDown(int amount) {
         reducedHeight = height - amount;
         Arrays.fill(tempBuffer, (char) 0);
         Arrays.fill(yLine, (char) 0);
@@ -139,7 +139,7 @@ public class Display {
     }
 
     // XO-CHIP, unofficial
-    void scrollUp(int amount) {
+    static void scrollUp(int amount) {
         reducedHeight = height - amount;
         Arrays.fill(tempBuffer, (char) 0);
         Arrays.fill(yLine, (char) 0);
@@ -159,16 +159,16 @@ public class Display {
         }
     }
 
-    void clear() {
+    static void clear() {
         Arrays.fill(buffer, (char) 0);
     }
 
-    void addSpriteData(char data) {
+    static void addSpriteData(char data) {
         sprite.add(data);
     }
 
-    public char[] getBuffer() {
-        return this.buffer;
+    static public char[] getBuffer() {
+        return buffer;
     }
 
 }

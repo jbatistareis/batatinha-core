@@ -5,24 +5,24 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 
-public class Buzzer {
+class Buzzer {
 
-    private final double pi2 = 2 * Math.PI;
+    private static final double pi2 = 2 * Math.PI;
 
-    private Clip clip = null;
-    private final AudioFormat audioFormat = new AudioFormat(22050, 16, 2, true, true);
-    private String note;
+    private static Clip clip = null;
+    private static final AudioFormat audioFormat = new AudioFormat(22050, 16, 2, true, true);
+    private static String note;
 
-    public Buzzer(String note) {
+    Buzzer(String note) {
         setNote(note);
     }
 
-    public void beep() {
+    static void beep() {
         clip.setFramePosition(0);
         clip.start();
     }
 
-    private byte[] sineWave(int frequency, int amplitude) {
+    private static byte[] sineWave(int frequency, int amplitude) {
         final byte[] output = new byte[3000];
         final double f = (double) frequency / 22050;
 
@@ -33,8 +33,8 @@ public class Buzzer {
         return output;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public static void setNote(String newNote) {
+        note = newNote;
 
         try {
             if (clip != null) {
@@ -43,7 +43,7 @@ public class Buzzer {
 
             clip = AudioSystem.getClip();
 
-            switch (this.note) {
+            switch (note) {
                 case "A":
                     clip.open(audioFormat, sineWave(440, 50), 0, 3000);
                     break;
@@ -73,8 +73,8 @@ public class Buzzer {
         }
     }
 
-    public String getNote() {
-        return this.note;
+    public static String getNote() {
+        return note;
     }
 
 }

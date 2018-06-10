@@ -28,7 +28,7 @@ public class Chip8 {
     }
 
     public char[] getDisplayBuffer() {
-        return this.display.getBuffer();
+        return display.getBuffer();
     }
 
     public void presKey(Key key) {

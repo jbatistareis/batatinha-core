@@ -6,12 +6,9 @@ import java.io.IOException;
 
 public class Chip8 {
 
-    private final static Buzzer buzzer = new Buzzer();
     private final Display display = new Display();
     private final Input input = new Input();
     private final Processor processor = new Processor(display, input);
-
-    private byte[] buzzerBeep = new byte[0];
 
     public void loadProgram(File program) throws IOException {
         final FileInputStream fileInputStream = new FileInputStream(program);
@@ -30,14 +27,6 @@ public class Chip8 {
         processor.reset();
     }
 
-    public void createBeep(int frequency, int amplitude, int sampleRate, int bitsPerSample) {
-        this.buzzerBeep = buzzer.createBeep(frequency, amplitude, sampleRate, bitsPerSample);
-    }
-
-    public byte[] getBeep() {
-        return this.buzzerBeep;
-    }
-
     public char[] getDisplayBuffer() {
         return this.display.getBuffer();
     }
@@ -45,7 +34,7 @@ public class Chip8 {
     public void presKey(Key key) {
         input.press(key);
     }
-    
+
     public void releaseKey(Key key) {
         input.release(key);
     }

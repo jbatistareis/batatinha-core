@@ -1,6 +1,6 @@
 package com.jbatista.batatinha.core;
 
-class Buzzer {
+public class Buzzer {
 
     private static final double pi2 = 2 * Math.PI;
 
@@ -16,7 +16,7 @@ class Buzzer {
         return output;
     }
 
-    static byte[] createBeep(int frequency, int amplitude, int sampleRate, int bitsPerSample) {
+    public static byte[] createBeep(int frequency, int amplitude, int sampleRate, int bitsPerSample) {
         return sineWave(frequency, amplitude, sampleRate, (sampleRate * bitsPerSample) / 1024);
     }
 

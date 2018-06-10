@@ -6,6 +6,8 @@ import java.util.List;
 
 class Display {
 
+    // to fill the gaps on an upscale
+    private static final char[] upscaleFill = new char[3072];
     private final List<Character> sprite = new ArrayList<>();
     private char[] buffer;
     private char[] tempBuffer;
@@ -31,11 +33,12 @@ class Display {
     }
 
     Display() {
+        Arrays.fill(upscaleFill, (char) 0);
         setDisplayMode(mode);
+        clear();
     }
 
-    void setDisplayMode(Mode newMode) {
-        mode = newMode;
+    void setDisplayMode(Mode mode) {
         switch (mode) {
             case LOW_RES:
                 width = 64;
@@ -48,11 +51,23 @@ class Display {
         }
 
         reducedWidth = width - 4;
-        buffer = new char[width * height];
-        tempBuffer = new char[buffer.length];
         xLine = new char[width];
         yLine = new char[height];
-        clear();
+        tempBuffer = new char[width * height];
+
+        if (this.mode.equals(mode)) { // initialization
+            buffer = new char[tempBuffer.length];
+        } else if (this.mode.equals(Mode.LOW_RES) && mode.equals(Mode.HIGH_RES)) { // upscale
+            System.arraycopy(upscaleFill, 0, tempBuffer, 0, upscaleFill.length);
+            System.arraycopy(buffer, 0, tempBuffer, upscaleFill.length, buffer.length);
+            System.arraycopy(upscaleFill, 0, tempBuffer, (upscaleFill.length + buffer.length), upscaleFill.length);
+            buffer = tempBuffer.clone();
+        } else if (this.mode.equals(Mode.HIGH_RES) && mode.equals(Mode.LOW_RES)) { // downscale
+            buffer = Arrays.copyOfRange(buffer, upscaleFill.length, tempBuffer.length);
+        }
+
+        Arrays.fill(tempBuffer, (char) 0);
+        this.mode = mode;
     }
 
     Mode getDisplayMode() {

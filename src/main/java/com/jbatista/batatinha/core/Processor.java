@@ -141,7 +141,7 @@ class Processor {
     }
 
     void loadProgram(char[] program) {
-        Arrays.fill(memory, 0, 512, (char) 0);
+        Arrays.fill(memory, 512, memory.length, (char) 0);
 
         for (i = 0; i < program.length; i++) {
             memory[i + 512] = program[i];
@@ -182,7 +182,7 @@ class Processor {
         if (opcodesMap.containsKey(decodedOpcode)) {
             opcodesMap.get(decodedOpcode).accept(opcode);
         } else {
-            System.out.println("UNKNOWN OPCODE - 0x" + Integer.toHexString(opcode).toUpperCase());
+            throw new RuntimeException("UNKNOWN OPCODE - 0x" + Integer.toHexString(opcode).toUpperCase());
         }
     }
 

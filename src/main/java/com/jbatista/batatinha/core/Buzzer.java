@@ -7,7 +7,7 @@ class Buzzer {
     private static byte[] sineWave(int frequency, int amplitude, int sampleRate, int sampleSize) {
         final byte[] output = new byte[sampleSize];
         final double f = (double) frequency / sampleRate;
-        final int fadeStart = sampleSize - amplitude - 1;
+        final int fadeStart = sampleSize - amplitude;
 
         for (int i = 0; i < output.length; i++) {
             output[i] = (byte) (((i > fadeStart) ? --amplitude : amplitude) * Math.sin(pi2 * f * i));
@@ -16,12 +16,8 @@ class Buzzer {
         return output;
     }
 
-    static byte[] createNote(Note note, int amplitude, Format format) {
-        return null;
-    }
-
-    static byte[] createNote(int frequency, int amplitude, int sampleRate, int bitsPerSample, int channels) {
-        return sineWave(frequency, amplitude, sampleRate, (sampleRate * bitsPerSample * channels) / 1024);
+    static byte[] createBeep(int frequency, int amplitude, int sampleRate, int bitsPerSample) {
+        return sineWave(frequency, amplitude, sampleRate, (sampleRate * bitsPerSample) / 1024);
     }
 
 }

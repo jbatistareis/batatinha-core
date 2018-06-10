@@ -11,7 +11,7 @@ public class Chip8 {
     private final Input input = new Input();
     private final Processor processor = new Processor(display, input);
 
-    private byte[] buzzerNote = new byte[0];
+    private byte[] buzzerBeep = new byte[0];
 
     public void loadProgram(File program) throws IOException {
         final FileInputStream fileInputStream = new FileInputStream(program);
@@ -30,16 +30,12 @@ public class Chip8 {
         processor.reset();
     }
 
-    public void createNote(Note note, int amplitude, Format format) {
-        this.buzzerNote = buzzer.createNote(note, amplitude, format);
+    public void createBeep(int frequency, int amplitude, int sampleRate, int bitsPerSample) {
+        this.buzzerBeep = buzzer.createBeep(frequency, amplitude, sampleRate, bitsPerSample);
     }
 
-    public void createNote(int frequency, int amplitude, int sampleRate, int bitsPerSample, int channels) {
-        this.buzzerNote = buzzer.createNote(frequency, amplitude, sampleRate, bitsPerSample, channels);
-    }
-
-    public byte[] getNote() {
-        return this.buzzerNote;
+    public byte[] getBeep() {
+        return this.buzzerBeep;
     }
 
     public char[] getDisplayBuffer() {

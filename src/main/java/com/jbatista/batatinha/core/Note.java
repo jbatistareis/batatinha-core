@@ -12,4 +12,5 @@ public enum Note {
     public int getFrequency() {
         return this.frequency;
     }
+
 }

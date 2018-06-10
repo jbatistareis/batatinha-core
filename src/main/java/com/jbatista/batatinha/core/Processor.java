@@ -75,6 +75,7 @@ class Processor {
     private char decodedOpcode;
     private char tempResult;
     private int drawN;
+    private boolean programLoaded = false;
 
     Processor(Display display, Input input) {
         this.display = display;
@@ -146,6 +147,8 @@ class Processor {
         for (i = 0; i < program.length; i++) {
             memory[i + 512] = program[i];
         }
+
+        programLoaded = true;
     }
 
     void reset() {
@@ -162,27 +165,29 @@ class Processor {
 
     // into main loop
     void cpuTick() {
-        opcode = (char) (memory[programCounter] << 8 | memory[programCounter + 1]);
-        decodedOpcode = (char) (opcode & 0xF000);
+        if (programLoaded) {
+            opcode = (char) (memory[programCounter] << 8 | memory[programCounter + 1]);
+            decodedOpcode = (char) (opcode & 0xF000);
 
-        // special cases, for instructions that use the last and/or the before last value
-        // namely 0x00XX, 0x00X#, 0x8##X, 0xF#XX and 0xE#XX
-        if (decodedOpcode == 0x8000) {
-            decodedOpcode = (char) (opcode & 0xF00F);
-        } else if ((decodedOpcode == 0xE000) || (decodedOpcode == 0xF000)) {
-            decodedOpcode = (char) (opcode & 0xF0FF);
-        } else if (decodedOpcode == 0x0) {
-            // special case 0x00C# and 0x001#
-            decodedOpcode = (char) (opcode & 0x00F0);
-            if ((decodedOpcode != 0xC0) && (decodedOpcode != 0x10)) {
-                decodedOpcode = opcode;
+            // special cases, for instructions that use the last and/or the before last value
+            // namely 0x00XX, 0x00X#, 0x8##X, 0xF#XX and 0xE#XX
+            if (decodedOpcode == 0x8000) {
+                decodedOpcode = (char) (opcode & 0xF00F);
+            } else if ((decodedOpcode == 0xE000) || (decodedOpcode == 0xF000)) {
+                decodedOpcode = (char) (opcode & 0xF0FF);
+            } else if (decodedOpcode == 0x0) {
+                // special case 0x00C# and 0x001#
+                decodedOpcode = (char) (opcode & 0x00F0);
+                if ((decodedOpcode != 0xC0) && (decodedOpcode != 0x10)) {
+                    decodedOpcode = opcode;
+                }
             }
-        }
 
-        if (opcodesMap.containsKey(decodedOpcode)) {
-            opcodesMap.get(decodedOpcode).accept(opcode);
-        } else {
-            throw new RuntimeException("UNKNOWN OPCODE - 0x" + Integer.toHexString(opcode).toUpperCase());
+            if (opcodesMap.containsKey(decodedOpcode)) {
+                opcodesMap.get(decodedOpcode).accept(opcode);
+            } else {
+                throw new RuntimeException("UNKNOWN OPCODE - 0x" + Integer.toHexString(opcode).toUpperCase());
+            }
         }
     }
 

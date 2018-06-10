@@ -42,8 +42,12 @@ public class Chip8 {
         return this.display.getBuffer();
     }
 
-    public Input getInput() {
-        return this.input;
+    public void presKey(Key key) {
+        input.press(key);
+    }
+    
+    public void releaseKey(Key key) {
+        input.release(key);
     }
 
     public void cpuTick() {

@@ -1,5 +1,15 @@
 package com.jbatista.batatinha.core;
 
 public enum Key {
-    K_0, K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9, K_A, K_B, K_C, K_D, K_E, K_F
+    KEY_0(0), KEY_1(1), KEY_2(2), KEY_3(3), KEY_4(4), KEY_5(5), KEY_6(6), KEY_7(7), KEY_8(8), KEY_9(9), KEY_A(10), KEY_B(11), KEY_C(12), KEY_D(13), KEY_E(14), KEY_F(15);
+
+    private char code;
+
+    Key(int code) {
+        this.code = (char) code;
+    }
+
+    public char getCode() {
+        return this.code;
+    }
 }

@@ -1,6 +1,8 @@
 package com.jbatista.batatinha.core;
 
 import com.jbatista.batatinha.core.Display.Mode;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -139,6 +141,18 @@ class Processor {
         opcodesMap.put((char) 0xF075, this::flagSave);
         opcodesMap.put((char) 0xF085, this::flagRestore);
         // </editor-fold>
+    }
+
+    void loadProgram(InputStream program) throws IOException {
+        Arrays.fill(memory, 512, memory.length, (char) 0);
+
+        int data;
+        int i = 0;
+        while ((data = program.read()) >= 0) {
+            memory[i++ + 512] = (char) data;
+        }
+
+        programLoaded = true;
     }
 
     void loadProgram(char[] program) {

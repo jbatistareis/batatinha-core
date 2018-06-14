@@ -152,16 +152,7 @@ class Processor {
             memory[i++ + 512] = (char) data;
         }
 
-        programLoaded = true;
-    }
-
-    void loadProgram(char[] program) {
-        Arrays.fill(memory, 512, memory.length, (char) 0);
-
-        for (i = 0; i < program.length; i++) {
-            memory[i + 512] = program[i];
-        }
-
+        program.close();
         programLoaded = true;
     }
 

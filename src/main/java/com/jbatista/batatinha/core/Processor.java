@@ -11,8 +11,6 @@ import java.util.function.Consumer;
 
 class Processor {
 
-    private static final Random random = new Random();
-
     // CPU, memory, registers, program counter
     private char opcode;
     private final char[] memory = new char[4096];
@@ -70,9 +68,10 @@ class Processor {
     private char delayTimer;
 
     // auxiliary
+    private static final Random random = new Random();
+    private static final Map<Character, Consumer<Character>> opcodesMap = new HashMap<>();
     private final Display display;
     private final Input input;
-    private final Map<Character, Consumer<Character>> opcodesMap = new HashMap<>();
     private boolean beep;
     private char decodedOpcode;
     private char tempResult;

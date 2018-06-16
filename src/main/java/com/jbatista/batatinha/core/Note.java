@@ -1,7 +1,7 @@
 package com.jbatista.batatinha.core;
 
 public enum Note {
-    A(440), B(493), C(523), D(587), E(659), F(698), G(783);
+    C(262), C_SHRP(278), D(294), D_SHRP(311), E(330), F(349), F_SHRP(370), G(392), G_SHRP(415), A(440), A_SHRP(466), B(494);
 
     private int frequency;
 

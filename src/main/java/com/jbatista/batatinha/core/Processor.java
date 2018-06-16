@@ -1,5 +1,10 @@
 package com.jbatista.batatinha.core;
 
+/**
+ * References: http://devernay.free.fr/hacks/chip8
+ * https://github.com/Chromatophore/HP48-Superchip
+ * https://github.com/JohnEarnest/Octo
+ */
 import com.jbatista.batatinha.core.Display.Mode;
 import java.io.IOException;
 import java.io.InputStream;

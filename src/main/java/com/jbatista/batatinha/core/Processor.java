@@ -1,10 +1,10 @@
 package com.jbatista.batatinha.core;
 
 /**
- * References: http://devernay.free.fr/hacks/chip8
+ * References: http://mattmik.com/retro.html
+ * http://devernay.free.fr/hacks/chip8
  * https://github.com/Chromatophore/HP48-Superchip
  * https://github.com/JohnEarnest/Octo
- * http://mattmik.com/files/chip8/mastering/chip8.html
  */
 import com.jbatista.batatinha.core.Display.Mode;
 import java.io.IOException;

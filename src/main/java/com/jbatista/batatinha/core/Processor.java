@@ -4,6 +4,7 @@ package com.jbatista.batatinha.core;
  * References: http://devernay.free.fr/hacks/chip8
  * https://github.com/Chromatophore/HP48-Superchip
  * https://github.com/JohnEarnest/Octo
+ * http://mattmik.com/files/chip8/mastering/chip8.html
  */
 import com.jbatista.batatinha.core.Display.Mode;
 import java.io.IOException;
@@ -465,6 +466,7 @@ class Processor {
         for (int vx = 0; vx <= ((opc & 0x0F00) >> 8); vx++) {
             memory[i + vx] = v[vx];
         }
+        i += ((opc & 0x0F00) >> 8) + 1;
         programCounter += 2;
     }
 
@@ -473,6 +475,7 @@ class Processor {
         for (int vx = 0; vx <= ((opc & 0x0F00) >> 8); vx++) {
             v[vx] = memory[i + vx];
         }
+        i += ((opc & 0x0F00) >> 8) + 1;
         programCounter += 2;
     }
 

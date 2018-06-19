@@ -4,6 +4,7 @@ package com.jbatista.batatinha.core;
  * References: http://mattmik.com/retro.html
  * http://devernay.free.fr/hacks/chip8
  * https://github.com/Chromatophore/HP48-Superchip
+ * https://github.com/AfBu/haxe-CHIP-8-emulator/wiki/(Super)CHIP-8-Secrets
  * https://github.com/JohnEarnest/Octo
  */
 import com.jbatista.batatinha.core.Display.Mode;
@@ -83,6 +84,7 @@ class Processor {
     private char tempResult;
     private int drawN;
     private boolean programLoaded = false;
+    private boolean iReadOnly = false;
 
     Processor(Display display, Input input) {
         this.display = display;
@@ -462,20 +464,30 @@ class Processor {
     }
 
     // FX55
+    // affected by compat
     private void dump(char opc) {
         for (int vx = 0; vx <= ((opc & 0x0F00) >> 8); vx++) {
             memory[i + vx] = v[vx];
         }
-        i += ((opc & 0x0F00) >> 8) + 1;
+
+        if(!iReadOnly){
+            i += ((opc & 0x0F00) >> 8) + 1;
+        }
+
         programCounter += 2;
     }
 
     // FX65
+    // affected by compat
     private void load(char opc) {
         for (int vx = 0; vx <= ((opc & 0x0F00) >> 8); vx++) {
             v[vx] = memory[i + vx];
         }
-        i += ((opc & 0x0F00) >> 8) + 1;
+
+        if(!iReadOnly){
+            i += ((opc & 0x0F00) >> 8) + 1;
+        }
+
         programCounter += 2;
     }
 
@@ -488,9 +500,13 @@ class Processor {
     }
 
     // 00FA
-    // not used?, makes the i register read only
+    // see [ https://github.com/AfBu/haxe-CHIP-8-emulator/wiki/(Super)CHIP-8-Secrets ], makes the i register read only
+    // this is an undocumented and VERY odd instruction, more than bitshift or draw
+    // generally, older schip games want I to NOT be changed after load or save, but some newer games want it TO BE changed
+    // needs more testing
     private void compat(char opc) {
-        // ?, create a flag or something
+        // should i toggle it?
+        iReadOnly = true;
         programCounter += 2;
     }
 

@@ -29,12 +29,12 @@ public class Chip8 {
         input.release(key);
     }
 
-    public void cpuTick() {
-        processor.cpuTick();
+    public void cpuStep() {
+        processor.cpuStep();
     }
 
-    public boolean timerTick() {
-        return processor.timerTick();
+    public boolean timerStep() {
+        return processor.timerStep();
     }
 
 }

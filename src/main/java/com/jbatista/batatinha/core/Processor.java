@@ -176,7 +176,7 @@ class Processor {
     }
 
     // into main loop
-    void cpuTick() {
+    void cpuStep() {
         if (programLoaded) {
             opcode = (char) (memory[programCounter] << 8 | memory[programCounter + 1]);
             decodedOpcode = (char) (opcode & 0xF000);
@@ -204,7 +204,7 @@ class Processor {
     }
 
     // 60Hz
-    boolean timerTick() {
+    boolean timerStep() {
         if (soundTimer > 0) {
             if ((--soundTimer == 0) && beep) {
                 beep = false;

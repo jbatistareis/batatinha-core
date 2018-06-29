@@ -1,8 +1,7 @@
 package com.jbatista.batatinha.core;
 
 /**
- * References: http://mattmik.com/retro.html
- * http://devernay.free.fr/hacks/chip8
+ * References: http://mattmik.com/retro.html http://devernay.free.fr/hacks/chip8
  * https://github.com/Chromatophore/HP48-Superchip
  * https://github.com/AfBu/haxe-CHIP-8-emulator/wiki/(Super)CHIP-8-Secrets
  * https://github.com/JohnEarnest/Octo
@@ -12,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -84,7 +84,8 @@ class Processor {
     private char tempResult;
     private int drawN;
     private boolean programLoaded = false;
-    private boolean iReadOnly = false;
+    private boolean schipBehaviour = false;
+    private char jump;
 
     Processor(Display display, Input input) {
         this.display = display;
@@ -153,10 +154,27 @@ class Processor {
     void loadProgram(InputStream program) throws IOException {
         Arrays.fill(memory, 512, memory.length, (char) 0);
 
+        // lookup list
+        final List<Character> schipOpcodes = Arrays.asList(
+                (char) 0x10, (char) 0xC0, (char) 0xFA,
+                (char) 0xFB, (char) 0xFC, (char) 0xFD,
+                (char) 0xFE, (char) 0xFF, (char) 0xF030,
+                (char) 0xF075, (char) 0xF085);
+
+        // control
+        boolean stillLooking = true;
+
         int data;
         int i = 0;
         while ((data = program.read()) >= 0) {
             memory[i++ + 512] = (char) data;
+
+            if (stillLooking && (i > 1)) {
+                if (schipOpcodes.contains((char) ((memory[i - 1] << 8 | memory[i]) & 0xF0FF))) {
+                    schipBehaviour = true;
+                    stillLooking = false;
+                }
+            }
         }
 
         program.close();
@@ -167,6 +185,7 @@ class Processor {
         Arrays.fill(v, (char) 0);
         Arrays.fill(stack, (char) 0);
 
+        display.setDisplayMode(Mode.LOW_RES);
         display.clear();
         i = 0;
         stackPointer = 0;
@@ -332,7 +351,13 @@ class Processor {
     // see [ https://github.com/Chromatophore/HP48-Superchip/blob/master/investigations/quirk_shift.md ]
     private void shiftVxRightBy1(char opc) {
         v[0xF] = (char) (v[(opc & 0x0F00) >> 8] & 1);
-        v[(opc & 0x0F00) >> 8] >>= 1;
+
+        if (schipBehaviour) {
+            v[(opc & 0x0F00) >> 8] >>= 1;
+        } else {
+            v[(opc & 0x0F00) >> 8] = v[(opc & 0x00F0) >> 4] >>= 1;
+        }
+
         programCounter += 2;
     }
 
@@ -347,7 +372,13 @@ class Processor {
     // see [ https://github.com/Chromatophore/HP48-Superchip/blob/master/investigations/quirk_shift.md ]
     private void shiftVxLeftBy1(char opc) {
         v[0xF] = (char) ((v[(opc & 0x0F00) >> 8] >> 7) & 1);
-        v[(opc & 0x0F00) >> 8] <<= 1;
+
+        if (schipBehaviour) {
+            v[(opc & 0x0F00) >> 8] <<= 1;
+        } else {
+            v[(opc & 0x0F00) >> 8] = v[(opc & 0x00F0) >> 4] <<= 1;
+        }
+
         programCounter += 2;
     }
 
@@ -368,7 +399,13 @@ class Processor {
 
     // BNNN
     private void goToV0(char opc) {
-        programCounter = (char) (v[0x0] + (opc & 0x0FFF));
+        jump = (char) (opc & 0x0FFF);
+
+        if (schipBehaviour) {
+            programCounter = (char) (jump + v[jump & 0xF]);
+        } else {
+            programCounter = (char) (v[0x0] + jump);
+        }
     }
 
     // CXNN
@@ -470,7 +507,7 @@ class Processor {
             memory[i + vx] = v[vx];
         }
 
-        if(!iReadOnly){
+        if (!schipBehaviour) {
             i += ((opc & 0x0F00) >> 8) + 1;
         }
 
@@ -484,7 +521,7 @@ class Processor {
             v[vx] = memory[i + vx];
         }
 
-        if(!iReadOnly){
+        if (!schipBehaviour) {
             i += ((opc & 0x0F00) >> 8) + 1;
         }
 
@@ -506,7 +543,7 @@ class Processor {
     // needs more testing
     private void compat(char opc) {
         // should i toggle it?
-        iReadOnly = true;
+        schipBehaviour = true;
         programCounter += 2;
     }
 

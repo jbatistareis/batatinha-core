@@ -9,3 +9,4 @@ Usage:
  3. Call the `step()` method for each cpu tick: `for(int i = 0, i < 8; i++){ chip8.step(); } //~500Hz @ 60fps`
  4. Get the display framebuffer from the `getDisplayBuffer()` method, it is an array composed of 0s and 1s, just draw it using your favorite method
  5. Input is processed using the methods `presKey(Key key)` and `releaseKey(Key key)`
+ 6. Use the `sineWave(int frequency, int amplitude, int sampleRate, int sampleSize)` method from the class `Buzzer` along with the emun `Note` to create a sine wave that can be played with a Java Clip

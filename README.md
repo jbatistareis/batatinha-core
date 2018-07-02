@@ -1,5 +1,5 @@
 # Batatinha core
-This is (~~not a libretro core, don't ask~~) a Java CHIP-8/Superchip emulator library, made from the guts my other CHIP-8 emulator ([Batatinha](https://github.com/jbatistareis/batatinha)), created to be used on an Android port (([Batatinha v2](https://github.com/jbatistareis/batatinha-v2))).
+This is (~~not a libretro core, don't ask~~) a Java CHIP-8/Superchip emulator library, made from the guts my other CHIP-8 emulator ([Batatinha](https://github.com/jbatistareis/batatinha)), created to be used on an Android port ([Batatinha v2](https://github.com/jbatistareis/batatinha-v2)).
 It is based on the VIP and SCHIP 1.1 instruction sets, auto choosing which based on the instructions used. Some newer games are made to be run with Octo instruction set, so they might not run correctly.
 
 Usage:

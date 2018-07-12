@@ -10,4 +10,4 @@ Usage:
  4. Call the `timerStep()` method separately at 60Hz, it returns true if theres a sound beep
  5. Get the display framebuffer from the `getDisplayBuffer()` method, it is an array composed of 0s and 1s, just draw it using your favorite method
  6. Input is processed using the methods `presKey(Key key)` and `releaseKey(Key key)`
- 7. Use the `sineWave(int frequency, int amplitude, int sampleRate, int sampleSize)` method from the class `Buzzer` along with the emun `Note` to create a sine wave that can be played with a Java Clip
+ 7. Use the `sineWave(int frequency, int amplitude, int sampleRate, int sampleSize)` method from the class `Buzzer` along with the emun `Note` to create a sine wave that can be played with a [Clip](https://docs.oracle.com/javase/8/docs/api/javax/sound/sampled/Clip.html).

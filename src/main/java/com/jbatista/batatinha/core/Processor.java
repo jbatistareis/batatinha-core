@@ -158,8 +158,7 @@ class Processor {
         final List<Character> schipOpcodes = Arrays.asList(
                 (char) 0x10, (char) 0xC0, (char) 0xFA,
                 (char) 0xFB, (char) 0xFC, (char) 0xFD,
-                (char) 0xFE, (char) 0xFF, (char) 0xF030,
-                (char) 0xF075, (char) 0xF085);
+                (char) 0xF030, (char) 0xF075, (char) 0xF085);
 
         // control
         boolean stillLooking = true;

@@ -99,7 +99,7 @@ class Processor {
             memory[i + chip8Font.length] = superChipFont[i];
         }
 
-        // <editor-fold defaultstate="collapsed" desc="hardcoded opcode functions, double click to expand (Netbeans)">
+        // <editor-fold defaultstate="collapsed" desc="hardcoded opcode functions">
         // chip-8 opcodes
         opcodesMap.put((char) 0xE0, this::dispClear);
         opcodesMap.put((char) 0xEE, this::returnSubRoutine);
@@ -237,7 +237,7 @@ class Processor {
         return false;
     }
 
-    // <editor-fold defaultstate="collapsed" desc="opcode methods, double click to expand (Netbeans)">
+    // <editor-fold defaultstate="collapsed" desc="opcode methods">
     // 0000
     private void call(char opc) {
         // not used (?)

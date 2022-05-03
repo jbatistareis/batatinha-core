@@ -6,7 +6,9 @@ package com.jbatista.batatinha.core;
  * https://github.com/AfBu/haxe-CHIP-8-emulator/wiki/(Super)CHIP-8-Secrets
  * https://github.com/JohnEarnest/Octo
  */
+
 import com.jbatista.batatinha.core.Display.Mode;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -26,45 +28,51 @@ class Processor {
     private char programCounter;
 
     // hardcoded fonts
-    private static final char[] chip8Font = {
-        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-        0x20, 0x60, 0x20, 0x20, 0x70, // 1
-        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-        0xF0, 0x80, 0xF0, 0x80, 0x80 // F
+    private static final char[] CHIP_8_FONT = {
+            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+            0x20, 0x60, 0x20, 0x20, 0x70, // 1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+            0xF0, 0x80, 0xF0, 0x80, 0x80 // F
     };
 
     // this font was copied from octo [ https://github.com/JohnEarnest/Octo ], the original super chip font has rounded edges
     // acording to [ https://github.com/Chromatophore/HP48-Superchip/blob/master/investigations/quirk_font.md ], A-F are not used
-    private static final char[] superChipFont = {
-        0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, // 0
-        0x18, 0x78, 0x78, 0x18, 0x18, 0x18, 0x18, 0x18, 0xFF, 0xFF, // 1
-        0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, // 2
-        0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, // 3
-        0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, 0x03, 0x03, 0x03, 0x03, // 4
-        0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, // 5
-        0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, // 6
-        0xFF, 0xFF, 0x03, 0x03, 0x06, 0x0C, 0x18, 0x18, 0x18, 0x18, // 7
-        0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, // 8
-        0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, // 9
-        0x7E, 0xFF, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, 0xC3, 0xC3, 0xC3, // A
-        0xFC, 0xFC, 0xC3, 0xC3, 0xFC, 0xFC, 0xC3, 0xC3, 0xFC, 0xFC, // B
-        0x3C, 0xFF, 0xC3, 0xC0, 0xC0, 0xC0, 0xC0, 0xC3, 0xFF, 0x3C, // C
-        0xFC, 0xFE, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xFE, 0xFC, // D
-        0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, // E
-        0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC0, 0xC0, 0xC0, 0xC0 // F
+    private static final char[] SUPER_CHIP_FONT = {
+            0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, // 0
+            0x18, 0x78, 0x78, 0x18, 0x18, 0x18, 0x18, 0x18, 0xFF, 0xFF, // 1
+            0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, // 2
+            0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, // 3
+            0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, 0x03, 0x03, 0x03, 0x03, // 4
+            0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, // 5
+            0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, // 6
+            0xFF, 0xFF, 0x03, 0x03, 0x06, 0x0C, 0x18, 0x18, 0x18, 0x18, // 7
+            0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, // 8
+            0xFF, 0xFF, 0xC3, 0xC3, 0xFF, 0xFF, 0x03, 0x03, 0xFF, 0xFF, // 9
+            0x7E, 0xFF, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, 0xC3, 0xC3, 0xC3, // A
+            0xFC, 0xFC, 0xC3, 0xC3, 0xFC, 0xFC, 0xC3, 0xC3, 0xFC, 0xFC, // B
+            0x3C, 0xFF, 0xC3, 0xC0, 0xC0, 0xC0, 0xC0, 0xC3, 0xFF, 0x3C, // C
+            0xFC, 0xFE, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xFE, 0xFC, // D
+            0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, // E
+            0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC0, 0xC0, 0xC0, 0xC0 // F
     };
+
+    // lookup table
+    private static final List<Character> SCHIP_OPCODES = Arrays.asList(
+            (char) 0x10, (char) 0xC0, (char) 0xFA,
+            (char) 0xFB, (char) 0xFC, (char) 0xFD,
+            (char) 0xF030, (char) 0xF075, (char) 0xF085);
 
     // jump routine stack
     private final char[] stack = new char[16];
@@ -75,8 +83,7 @@ class Processor {
     private char delayTimer;
 
     // auxiliary
-    private static final Random random = new Random();
-    private static final Map<Character, Consumer<Character>> opcodesMap = new HashMap<>();
+    private static final Random RANDOM = new Random();
     private final Display display;
     private final Input input;
     private boolean beep;
@@ -92,73 +99,16 @@ class Processor {
         this.input = input;
 
         // load both fonts
-        for (int i = 0; i < chip8Font.length; i++) {
-            memory[i] = chip8Font[i];
+        for (int i = 0; i < CHIP_8_FONT.length; i++) {
+            memory[i] = CHIP_8_FONT[i];
         }
-        for (int i = 0; i < superChipFont.length; i++) {
-            memory[i + chip8Font.length] = superChipFont[i];
+        for (int i = 0; i < SUPER_CHIP_FONT.length; i++) {
+            memory[i + CHIP_8_FONT.length] = SUPER_CHIP_FONT[i];
         }
-
-        // <editor-fold defaultstate="collapsed" desc="hardcoded opcode functions">
-        // chip-8 opcodes
-        opcodesMap.put((char) 0xE0, this::dispClear);
-        opcodesMap.put((char) 0xEE, this::returnSubRoutine);
-        opcodesMap.put((char) 0x1000, this::goTo);
-        opcodesMap.put((char) 0x2000, this::callSubroutine);
-        opcodesMap.put((char) 0x3000, this::skipVxEqNN);
-        opcodesMap.put((char) 0x4000, this::skipVxNotEqNN);
-        opcodesMap.put((char) 0x5000, this::skipVxEqVy);
-        opcodesMap.put((char) 0x6000, this::setVx);
-        opcodesMap.put((char) 0x7000, this::addNNtoVx);
-        opcodesMap.put((char) 0x8000, this::setVxTovY);
-        opcodesMap.put((char) 0x8001, this::setVxToVxOrVy);
-        opcodesMap.put((char) 0x8002, this::setVxToVxAndVy);
-        opcodesMap.put((char) 0x8003, this::setVxToVxXorVy);
-        opcodesMap.put((char) 0x8004, this::addVxToVyCarry);
-        opcodesMap.put((char) 0x8005, this::subtractVyFromVx);
-        opcodesMap.put((char) 0x8006, this::shiftVxRightBy1);
-        opcodesMap.put((char) 0x8007, this::subtractVxFromVy);
-        opcodesMap.put((char) 0x800E, this::shiftVxLeftBy1);
-        opcodesMap.put((char) 0x9000, this::skipVxNotEqVy);
-        opcodesMap.put((char) 0xA000, this::setI);
-        opcodesMap.put((char) 0xB000, this::goToV0);
-        opcodesMap.put((char) 0xC000, this::rand);
-        opcodesMap.put((char) 0xD000, this::draw);
-        opcodesMap.put((char) 0xE09E, this::skipVxEqKey);
-        opcodesMap.put((char) 0xE0A1, this::skipVxNotEqKey);
-        opcodesMap.put((char) 0xF007, this::vxToDelay);
-        opcodesMap.put((char) 0xF00A, this::waitKey);
-        opcodesMap.put((char) 0xF015, this::setDelayTimer);
-        opcodesMap.put((char) 0xF018, this::setSoundTimer);
-        opcodesMap.put((char) 0xF01E, this::addsVxToI);
-        opcodesMap.put((char) 0xF029, this::setIToSpriteInVx5bit);
-        opcodesMap.put((char) 0xF033, this::bcd);
-        opcodesMap.put((char) 0xF055, this::dump);
-        opcodesMap.put((char) 0xF065, this::load);
-
-        // superchip opcodes
-        opcodesMap.put((char) 0x10, this::exitWithCode);
-        opcodesMap.put((char) 0xC0, this::scrollDown);
-        opcodesMap.put((char) 0xFA, this::compat);
-        opcodesMap.put((char) 0xFB, this::scrollRight);
-        opcodesMap.put((char) 0xFC, this::scrollLeft);
-        opcodesMap.put((char) 0xFD, this::terminate);
-        opcodesMap.put((char) 0xFE, this::loRes);
-        opcodesMap.put((char) 0xFF, this::hiRes);
-        opcodesMap.put((char) 0xF030, this::setIToSpriteInVx10bit);
-        opcodesMap.put((char) 0xF075, this::flagSave);
-        opcodesMap.put((char) 0xF085, this::flagRestore);
-        // </editor-fold>
     }
 
     void loadProgram(InputStream program) throws IOException {
         Arrays.fill(memory, 512, memory.length, (char) 0);
-
-        // lookup list
-        final List<Character> schipOpcodes = Arrays.asList(
-                (char) 0x10, (char) 0xC0, (char) 0xFA,
-                (char) 0xFB, (char) 0xFC, (char) 0xFD,
-                (char) 0xF030, (char) 0xF075, (char) 0xF085);
 
         // control
         boolean stillLooking = true;
@@ -169,7 +119,7 @@ class Processor {
             memory[i++ + 512] = (char) data;
 
             if (stillLooking && (i > 1)) {
-                if (schipOpcodes.contains((char) ((memory[i - 1] << 8 | memory[i]) & 0xF0FF))) {
+                if (SCHIP_OPCODES.contains((char) ((memory[i - 1] << 8 | memory[i]) & 0xF0FF))) {
                     schipBehaviour = true;
                     stillLooking = false;
                 }
@@ -213,11 +163,152 @@ class Processor {
                 }
             }
 
-            if (opcodesMap.containsKey(decodedOpcode)) {
-                opcodesMap.get(decodedOpcode).accept(opcode);
-            } else {
-                throw new RuntimeException("UNKNOWN OPCODE - 0x" + Integer.toHexString(opcode).toUpperCase());
+            // <editor-fold defaultstate="collapsed" desc="the bad boy">
+            switch (decodedOpcode) {
+                // chip8 opcodes
+                case (char) 0xE0:
+                    dispClear(opcode);
+                    break;
+                case (char) 0xEE:
+                    returnSubRoutine(opcode);
+                    break;
+                case (char) 0x1000:
+                    goTo(opcode);
+                    break;
+                case (char) 0x2000:
+                    callSubroutine(opcode);
+                    break;
+                case (char) 0x3000:
+                    skipVxEqNN(opcode);
+                    break;
+                case (char) 0x4000:
+                    skipVxNotEqNN(opcode);
+                    break;
+                case (char) 0x5000:
+                    skipVxEqVy(opcode);
+                    break;
+                case (char) 0x6000:
+                    setVx(opcode);
+                    break;
+                case (char) 0x7000:
+                    addNNtoVx(opcode);
+                    break;
+                case (char) 0x8000:
+                    setVxTovY(opcode);
+                    break;
+                case (char) 0x8001:
+                    setVxToVxOrVy(opcode);
+                    break;
+                case (char) 0x8002:
+                    setVxToVxAndVy(opcode);
+                    break;
+                case (char) 0x8003:
+                    setVxToVxXorVy(opcode);
+                    break;
+                case (char) 0x8004:
+                    addVxToVyCarry(opcode);
+                    break;
+                case (char) 0x8005:
+                    subtractVyFromVx(opcode);
+                    break;
+                case (char) 0x8006:
+                    shiftVxRightBy1(opcode);
+                    break;
+                case (char) 0x8007:
+                    subtractVxFromVy(opcode);
+                    break;
+                case (char) 0x800E:
+                    shiftVxLeftBy1(opcode);
+                    break;
+                case (char) 0x9000:
+                    skipVxNotEqVy(opcode);
+                    break;
+                case (char) 0xA000:
+                    setI(opcode);
+                    break;
+                case (char) 0xB000:
+                    goToV0(opcode);
+                    break;
+                case (char) 0xC000:
+                    rand(opcode);
+                    break;
+                case (char) 0xD000:
+                    draw(opcode);
+                    break;
+                case (char) 0xE09E:
+                    skipVxEqKey(opcode);
+                    break;
+                case (char) 0xE0A1:
+                    skipVxNotEqKey(opcode);
+                    break;
+                case (char) 0xF007:
+                    vxToDelay(opcode);
+                    break;
+                case (char) 0xF00A:
+                    waitKey(opcode);
+                    break;
+                case (char) 0xF015:
+                    setDelayTimer(opcode);
+                    break;
+                case (char) 0xF018:
+                    setSoundTimer(opcode);
+                    break;
+                case (char) 0xF01E:
+                    addsVxToI(opcode);
+                    break;
+                case (char) 0xF029:
+                    setIToSpriteInVx5bit(opcode);
+                    break;
+                case (char) 0xF033:
+                    bcd(opcode);
+                    break;
+                case (char) 0xF055:
+                    dump(opcode);
+                    break;
+                case (char) 0xF065:
+                    load(opcode);
+                    break;
+
+                // superchip opcodes
+                case (char) 0x10:
+                    exitWithCode(opcode);
+                    break;
+                case (char) 0xC0:
+                    scrollDown(opcode);
+                    break;
+                case (char) 0xFA:
+                    compat(opcode);
+                    break;
+                case (char) 0xFB:
+                    scrollRight(opcode);
+                    break;
+                case (char) 0xFC:
+                    scrollLeft(opcode);
+                    break;
+                case (char) 0xFD:
+                    terminate(opcode);
+                    break;
+                case (char) 0xFE:
+                    loRes(opcode);
+                    break;
+                case (char) 0xFF:
+                    hiRes(opcode);
+                    break;
+                case (char) 0xF030:
+                    setIToSpriteInVx10bit(opcode);
+                    break;
+                case (char) 0xF075:
+                    flagSave(opcode);
+                    break;
+                case (char) 0xF085:
+                    flagRestore(opcode);
+                    break;
+                default:
+                    System.err.println("UNKNOWN OPCODE - 0x" + Integer.toHexString(opcode).toUpperCase());
+                    reset();
+                    break;
             }
+            // </editor-fold>
         }
     }
 
@@ -242,7 +333,7 @@ class Processor {
     private void call(char opc) {
         // not used (?)
         // calls a routine on the RCA 1802 chip
-        // acording to the internet nobody ever used it
+        // according to the internet nobody ever used it
     }
 
     // 00E0
@@ -409,7 +500,7 @@ class Processor {
 
     // CXNN
     private void rand(char opc) {
-        v[(opc & 0x0F00) >> 8] = (char) (random.nextInt(255) & (opc & 0x00FF));
+        v[(opc & 0x0F00) >> 8] = (char) (RANDOM.nextInt(255) & (opc & 0x00FF));
         programCounter += 2;
     }
 
@@ -452,7 +543,7 @@ class Processor {
 
     // FX07
     private void vxToDelay(char opc) {
-        v[(opc & 0x0F00) >> 8] = (char) delayTimer;
+        v[(opc & 0x0F00) >> 8] = delayTimer;
         programCounter += 2;
     }
 
@@ -491,11 +582,12 @@ class Processor {
     }
 
     // FX33
-    // this was copied, shame on me :( [ source: https://github.com/JohnEarnest/Octo ]
     private void bcd(char opc) {
-        memory[i] = (char) ((v[(opc & 0x0F00) >> 8] / 100) % 10);
-        memory[i + 1] = (char) ((v[(opc & 0x0F00) >> 8] / 10) % 10);
-        memory[i + 2] = (char) (v[(opc & 0x0F00) >> 8] % 10);
+        final char vx = v[(opc & 0x0F00) >> 8];
+
+        memory[i] = (char) (vx / 100);
+        memory[i + 1] = (char) ((vx / 10) % 10);
+        memory[i + 2] = (char) ((vx % 100) % 10);
         programCounter += 2;
     }
 
@@ -572,7 +664,7 @@ class Processor {
 
     // F030
     private void setIToSpriteInVx10bit(char opc) {
-        i = (char) ((v[(opc & 0x0F00) >> 8] * 10 + chip8Font.length));
+        i = (char) ((v[(opc & 0x0F00) >> 8] * 10 + CHIP_8_FONT.length));
         programCounter += 2;
     }
 

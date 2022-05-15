@@ -550,7 +550,7 @@ class Processor {
     // FX0A
     private void waitKey(char opc) {
         // only advances the program counter if there was a key press
-        if (input.pressRegistred()) {
+        if (input.pressRegistered()) {
             v[(opc & 0x0F00) >> 8] = input.getLastKey();
             programCounter += 2;
         }
